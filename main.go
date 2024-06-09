@@ -28,15 +28,14 @@ func main() {
 		resp := NewResp(conn)
 
 		// read from client
-		value, err := resp.Read()
+		_, err := resp.Read()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		fmt.Println(value)
-
-		// write to client
-		conn.Write([]byte("+OK\r\n"))
+		// write to client using writer
+		writer := NewRespWriter(conn)
+		writer.Write(Value{type_of: "string", str: "OK"})
 	}
 }

@@ -22,6 +22,8 @@ type Value struct {
 	type_of string
 	bulk    string
 	array   []Value
+	str     string
+	num     int
 }
 
 type Resp struct {
@@ -129,4 +131,84 @@ func (r *Resp) Read() (Value, error) {
 		fmt.Printf("ERROR: unknown type %v\n", string(type_of))
 		return Value{}, nil
 	}
+}
+
+// calls serialize which can use recusrsion to serialize the array
+func (v Value) serializeArray() []byte {
+	length := len(v.array)
+	var b []byte
+	b = append(b, ARRAY)
+	b = append(b, strconv.Itoa(length)...)
+	b = append(b, '\r', '\n')
+
+	for i := 0; i < length; i++ {
+		b = append(b, v.array[i].Serialize()...)
+	}
+
+	return b
+}
+
+func (v Value) serializeBulk() []byte {
+	var b []byte
+	b = append(b, BULK)
+	b = append(b, []byte(strconv.Itoa(len(v.bulk)))...)
+	b = append(b, '\r', '\n')
+	b = append(b, v.bulk...)
+	b = append(b, '\r', '\n')
+
+	return b
+}
+
+func (v Value) serializeString() []byte {
+	var b []byte
+	b = append(b, STRING)
+	b = append(b, v.str...)
+	b = append(b, '\r', '\n')
+
+	return b
+}
+
+func (v Value) serializeNull() []byte {
+	var b []byte
+	b = append(b, ERROR)
+	b = append(b, v.str...)
+	b = append(b, '\r', '\n')
+
+	return b
+}
+
+func (v Value) serializeError() []byte {
+	return []byte("$-1\r\n")
+}
+
+// serializes the Value struct
+func (v Value) Serialize() []byte {
+	switch v.type_of {
+	case "array":
+		return v.serializeArray()
+	case "bulk":
+		return v.serializeBulk()
+	case "string":
+		return v.serializeString()
+	case "null":
+		return v.serializeNull()
+	case "error":
+		return v.serializeError()
+	default:
+		return []byte{}
+	}
+}
+
+type RespWriter struct {
+	writer io.Writer
+}
+
+func NewRespWriter(writer io.Writer) *RespWriter {
+	return &RespWriter{writer: writer}
+}
+
+func (w *RespWriter) Write(v Value) error {
+	_, err := w.writer.Write(v.Serialize())
+
+	return err
 }
