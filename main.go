@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -28,14 +29,37 @@ func main() {
 		resp := NewResp(conn)
 
 		// read from client
-		_, err := resp.Read()
+		val, err := resp.Read()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		if val.type_of != "array" {
+			fmt.Println("Expected array")
+			continue
+		}
+		if len(val.array) < 1 {
+			fmt.Println("Expected at least one argument")
+			continue
+		}
+
+		// get the command
+		cmd := strings.ToUpper(val.array[0].bulk)
+		args := val.array[1:]
 
 		// write to client using writer
 		writer := NewRespWriter(conn)
-		writer.Write(Value{type_of: "string", str: "OK"})
+
+		handler, ok := Handlers[cmd]
+		if !ok {
+			fmt.Println("Command not found")
+			writer.Write(Value{type_of: "string", str: "ERR unknown command '" + cmd + "'"})
+			continue
+		}
+
+		// call the handler
+		res := handler(args)
+
+		writer.Write(res)
 	}
 }
