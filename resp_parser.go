@@ -14,6 +14,7 @@ const (
 	INTEGER = ':'
 	BULK    = '$'
 	ARRAY   = '*'
+	NULL    = '_'
 )
 
 // struct for commands and arguments for serialize/deserialize
@@ -23,7 +24,6 @@ type Value struct {
 	bulk    string
 	array   []Value
 	str     string
-	num     int
 }
 
 type Resp struct {
@@ -170,7 +170,7 @@ func (v Value) serializeString() []byte {
 
 func (v Value) serializeNull() []byte {
 	var b []byte
-	b = append(b, ERROR)
+	b = append(b, NULL)
 	b = append(b, v.str...)
 	b = append(b, '\r', '\n')
 

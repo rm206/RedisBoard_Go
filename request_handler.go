@@ -110,6 +110,10 @@ func hgetall(args []Value) Value {
 	return Value{type_of: "array", array: values}
 }
 
+func command_init(args []Value) Value {
+	return Value{type_of: "null"}
+}
+
 var Handlers = map[string]func([]Value) Value{
 	"PING":    ping,
 	"SET":     set,
@@ -117,4 +121,5 @@ var Handlers = map[string]func([]Value) Value{
 	"HSET":    hset,
 	"HGET":    hget,
 	"HGETALL": hgetall,
+	"COMMAND": command_init,
 }

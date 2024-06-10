@@ -17,6 +17,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	aof, err := NewAof("dump.aof")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer aof.Close()
+
 	conn, err := ln.Accept()
 	if err != nil {
 		fmt.Println(err)
@@ -55,6 +62,10 @@ func main() {
 			fmt.Println("Command not found")
 			writer.Write(Value{type_of: "string", str: "ERR unknown command '" + cmd + "'"})
 			continue
+		}
+
+		if cmd == "SET" || cmd == "HSET" {
+			aof.Write(val)
 		}
 
 		// call the handler
