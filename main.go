@@ -4,10 +4,26 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
+	erase_after_days := 5
+
+	if len(os.Args) > 1 {
+		temp := os.Args[1]
+		temp_converted, err := strconv.Atoi(temp)
+		if err != nil {
+			fmt.Println("Invalid argument, defaulting to erasing dump in 5 days")
+		} else {
+			erase_after_days = temp_converted
+		}
+	} else {
+		fmt.Println("No argument provided, defaulting to erasing dump in 5 days")
+	}
+	_ = erase_after_days
+
 	fmt.Println("Listening on port 6379")
 
 	// Listen on port 6379
@@ -17,7 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	aof, err := NewAof("dump.aof")
+	aof, err := NewAof("dump.aof", erase_after_days)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
