@@ -13,31 +13,8 @@ type AOF struct {
 	mutex sync.Mutex
 }
 
-// clear the file if it is older than "erase_after_days" days
-func clearFileIfOld(f *os.File, erase_after_days int) (bool, error) {
-	// Read the first line of the file
-	scanner := bufio.NewScanner(f)
-	if !scanner.Scan() {
-		// File is empty, no need to clear
-		return false, nil
-	}
-	firstLine := scanner.Text()
-
-	time_str_format := "2006-01-02 15:04:05.999999 -0700 MST m=+0.000000000"
-	old_time, _ := time.Parse(time_str_format, firstLine)
-	date_days_ago := time.Now().AddDate(0, 0, -erase_after_days)
-
-	if old_time.Before(date_days_ago) {
-		// Clear the file
-		f.Truncate(0)
-		f.Seek(0, 0)
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func NewAof(path string, erase_after_days int) (*AOF, error) {
+// even though this is supposed to be an append only file, we will clear the file if it is older than "erase_after_days" days. Slighy liberty for use case
+func NewAof(path string, erase_after_days int, syncAfterSeconds int) (*AOF, error) {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 	if err != nil {
 		return nil, err
@@ -62,7 +39,7 @@ func NewAof(path string, erase_after_days int) (*AOF, error) {
 
 			aof.mutex.Unlock()
 
-			time.Sleep(120 * time.Second) // sync every 2 minutes
+			time.Sleep(time.Duration(syncAfterSeconds) * time.Second) // sync every 2 minutes
 		}
 	}()
 

@@ -10,6 +10,8 @@ import (
 
 func main() {
 	erase_after_days := 5
+	flushMapAfterSeconds := 10 * 60
+	syncAfterSeconds := 120
 
 	if len(os.Args) > 1 {
 		temp := os.Args[1]
@@ -33,7 +35,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	aof, err := NewAof("dump.aof", erase_after_days)
+	dump_path_rdb := "dump.rdb"
+	rdb, err := NewRdb(dump_path_rdb, erase_after_days, flushMapAfterSeconds, syncAfterSeconds)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer rdb.Close()
+
+	dump_path_aof := "dump.aof"
+	aof, err := NewAof(dump_path_aof, erase_after_days, syncAfterSeconds)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

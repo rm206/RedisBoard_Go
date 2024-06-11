@@ -123,3 +123,25 @@ var Handlers = map[string]func([]Value) Value{
 	"HGETALL": hgetall,
 	"COMMAND": command_init,
 }
+
+func getHSETs_mapString() string {
+	HSETs_map_Mu.RLock()
+	defer HSETs_map_Mu.RUnlock()
+
+	str := ""
+	for k, v := range HSETs_map {
+		str += k + ":\n"
+		for kk, vv := range v {
+			str += "  " + kk + " : " + vv + "\n"
+		}
+	}
+
+	return str
+}
+
+func clearHSETs_map() {
+	HSETs_map_Mu.Lock()
+	defer HSETs_map_Mu.Unlock()
+
+	HSETs_map = map[string]map[string]string{}
+}
