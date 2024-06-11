@@ -24,7 +24,6 @@ func main() {
 	} else {
 		fmt.Println("No argument provided, defaulting to erasing dump in 5 days")
 	}
-	_ = erase_after_days
 
 	fmt.Println("Listening on port 6379")
 
