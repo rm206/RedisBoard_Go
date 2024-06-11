@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/rm206/RedisBoard_Go/clipboard_monitor"
 )
 
 func main() {
@@ -49,6 +51,9 @@ func main() {
 		os.Exit(1)
 	}
 	defer aof.Close()
+
+	// Start the clipboard monitor goroutine
+	go clipboard_monitor.Monitor()
 
 	conn, err := ln.Accept()
 	if err != nil {
