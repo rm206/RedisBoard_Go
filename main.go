@@ -12,8 +12,8 @@ import (
 
 func main() {
 	erase_after_days := 5
-	flushMapAfterSeconds := 10 * 60
-	syncAfterSeconds := 120
+	// flushMapAfterSeconds := 1 //10 * 60
+	syncAfterSeconds := 5 //120
 
 	if len(os.Args) > 1 {
 		temp := os.Args[1]
@@ -36,13 +36,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	dump_path_rdb := "dump.rdb"
-	rdb, err := NewRdb(dump_path_rdb, erase_after_days, flushMapAfterSeconds, syncAfterSeconds)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer rdb.Close()
+	/*
+		dump_path_rdb := "dump.rdb"
+		rdb, err := NewRdb(dump_path_rdb, erase_after_days, flushMapAfterSeconds, syncAfterSeconds)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer rdb.Close()
+	*/
 
 	dump_path_aof := "dump.aof"
 	aof, err := NewAof(dump_path_aof, erase_after_days, syncAfterSeconds)
@@ -80,6 +82,8 @@ func main() {
 			fmt.Println("Expected at least one argument")
 			continue
 		}
+
+		fmt.Println("Received Request")
 
 		// get the command
 		cmd := strings.ToUpper(val.array[0].bulk)
